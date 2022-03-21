@@ -12,7 +12,7 @@
 ANNSeq is a `snakemake` pipeline that takes Oxford Nanopore Sequencing (ONS) data (fastq) as input, generates fastq stats using `nanostat`, performs fastq processing and filtering using `pychopper`, map the reads to the genome using `minimap2` and uses `talon` to assemble and quantify transcripts. Below is the dag of the pipeline:  
 
 <p align="center">
-  <img src="dag/dag.png" width="600" height="500"/>  
+  <img src="dag/dag.png" width="600" height="800"/>  
 </p>
 
 
