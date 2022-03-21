@@ -1,0 +1,13 @@
+name: annseq
+channels:
+ - conda-forge
+ - bioconda
+ - defaults
+dependencies:
+ - snakemake==6.12.3
+ - python>3.6
+ - nanostat
+ - pychopper>=2.0
+ - minimap2
+ - samtools
+ - talon
