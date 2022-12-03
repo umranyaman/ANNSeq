@@ -10,4 +10,6 @@ dependencies:
  - pychopper>=2.0
  - minimap2
  - samtools
+ - pyranges
+ - pyfaidx
  - talon
