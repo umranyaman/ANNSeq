@@ -43,11 +43,27 @@ rule all:
 
 #########################################################################
 
-
-
-rule nanostat:
+rule concenate:
     input:
         fq = config["reads_fastq"]
+        
+    output:
+        outfq = "processed_reads/input_reads.fq"
+    
+    shell:
+        """
+        mkdir -p processed_reads;
+        if [[ {params.concat} == "True" ]];
+        then
+            find {input.fq}  -regextype posix-extended -regex '.*\.(fastq|fq)$' -exec cat {{}} \\; > processed_reads/input_reads.fq
+        else
+            ln -s `realpath {input.fq}` processed_reads/input_reads.fq
+        fi
+        """
+        
+rule nanostat:
+    input:
+        fq = rules.concenate.output.outfq
 
     output:
         ns = "Nanostat/stat_out.txt"
@@ -62,7 +78,7 @@ rule nanostat:
 
 rule pychopper:
     input:
-        fq = config["reads_fastq"]
+        fq = rules.concenate.output.outfq
 
     output:
         pyfq = "Pychopper/" + sample + "_pychopped.fastq"
@@ -78,7 +94,7 @@ rule pychopper:
     shell:
         """
         cd {params.outpath};
-        (cdna_classifier.py -x DCS109 -t {threads} -r report.pdf -u unclassified.fq -w rescued.fq {input.fq} {params.prefix}) 2> {log}
+        (cdna_classifier.py -t {threads} -r report.pdf -u unclassified.fq -w rescued.fq {input.fq} {params.prefix}) 2> {log}
         """
 
 
@@ -116,6 +132,20 @@ rule sort_sam:
         """
 
 
+rule transcriptclean:
+    input:
+        genome = config["genome"],
+        sam2 = rules.sort_sam.output.sortedSam
+         
+    output:
+        clsam = "Mapping/" + sample + "_minimap.sortedcleaned.sam"
+    
+    shell:
+        """
+        python /home/DSUmranYaman/TranscriptClean/TranscriptClean.py --sam {input.sam2} --genome {input.genome}
+        """
+        
+        
 
 rule talon_initialize_database:
     input:
@@ -126,7 +156,7 @@ rule talon_initialize_database:
 
     params:
         gtf_name = Path(config["gtf"]).stem,
-        gbuild = "hg38",
+        gbuild = "mm10",
         prefix = "Talon/talon_" + Path(config["gtf"]).stem
 
     log: "Talon/talon_db.log"
@@ -173,7 +203,7 @@ rule talon_annotate:
         prefix1 = sample,
         prefix2 = "Talon/" + sample,
         description = sample + "_sam",
-        gbuild = "hg38"
+        gbuild = "mm10"
 
     log: "Talon/talon_annotate.log"
 
@@ -216,7 +246,7 @@ rule talon_abundance:
 
     params:
         gtf_name = Path(config["gtf"]).stem,
-        gbuild = "hg38",
+        gbuild = "mm10",
         prefix = "Talon/" + sample
 
     log: "Talon/talon_abundance.log"
@@ -238,7 +268,7 @@ rule talon_create_GTF:
 
     params:
         gtf_name = Path(config["gtf"]).stem,
-        gbuild = "hg38",
+        gbuild = "mm10",
         prefix = "Talon/" + sample
 
     log: "Talon/talon_gtf.log"
