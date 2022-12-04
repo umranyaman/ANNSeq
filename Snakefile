@@ -1,8 +1,6 @@
 import os
 import Bio
 import shutil
-from os import path
-from re import search
 from pathlib import Path
 
 from snakemake.utils import validate
